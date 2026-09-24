@@ -23,3 +23,6 @@ test-data/Real_Data_Case_Analysis.xlsx
 test-data/Manual_Proof_Workbook.xlsx
 reconcile_body.json
 *.csv
+
+# one-off local analysis scripts
+client/*.py
