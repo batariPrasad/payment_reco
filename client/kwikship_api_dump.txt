@@ -1,0 +1,933 @@
+pages 24
+===== PAGE 1 =====
+Kwikship Public API Documentation — v1
+Kwikship Public API Documentation
+Overview
+The Kwikship Public API allows merchants to programmatically manage orders, track shipments,
+and handle NDR (Non-Delivery Report) workflows.
+Base URLs:
+API Version: v1
+Authentication
+All API requests must include your merchant credentials in the request headers. The system
+validates credentials against the GoKwik Merchant Service.
+Headers
+How to Get Your Credentials
+API credentials are available in your Kwikship Dashboard under Admin → Account → API Keys.
+Contact  for access.
+Example
+Production https://api.gokwik.co/kwikship
+Staging https://sandbox-
+api.gokwik.co/kwikship
+Environment Base URL
+gk-app-id string Yes Your application ID
+gk-app-secret string Yes Your application
+secret
+Header Type Required Description
+support@kwikship.com
+1 curl -X GET "https://api.gokwik.co/kwikship/api/v1/orders" \
+2 -H "gk-app-id: YOUR_APP_ID" \
+3 -H "gk-app-secret: YOUR_APP_SECRET"
+===== PAGE 2 =====
+Authentication Errors
+Response Format
+Success Response
+The meta  field is included only for paginated list endpoints.
+Error Response
+Error Codes
+401 Unauthorized Missing or invalid gk-app-id  / gk-app-
+secret  headers. Credentials failed merchant
+validation.
+HTTP Status Error
+1 {
+2 "success": true,
+3 "data": { },
+4 "message": "Descriptive success message",
+5 "meta": {
+6 "page": 1,
+7 "per_page": 20,
+8 "total": 150,
+9 "total_pages": 8
+10 }
+11 }
+1 {
+2 "success": false,
+3 "error": {
+4 "code": "ERROR_CODE",
+5 "message": "Human-readable error description"
+6 }
+7 }
+VALIDATION_ERROR 400 Invalid input data or request
+parameters
+UNAUTHORIZED 401 Authentication failed or
+missing credentials
+FORBIDDEN 403 Insufficient permissions for
+this operation
+Code HTTP Status Description
+===== PAGE 3 =====
+API Endpoints Summary
+Important: Strict Input Validation
+All endpoints enforce strict field validation. Any unknown or unexpected fields in request
+bodies or query parameters will be rejected with a VALIDATION_ERROR  (400) response. Only
+NOT_FOUND 404 Requested resource not found
+CONFLICT 409 Resource already exists (e.g.,
+duplicate order ID)
+INTERNAL_ERROR 500 Unexpected server error —
+retry or contact support
+POST /api/v1/orders Create a new order
+GET /api/v1/orders List orders with filters
+GET /api/v1/orders/:order_i
+d
+Get order details
+PATCH /api/v1/orders/:order_i
+d
+Update order (pre-AWB only)
+GET /api/v1/tracking/shipme
+nts/bulk
+Bulk shipment tracking by date
+range
+GET /api/v1/shipments List shipments with advanced
+filters
+GET /api/v1/shipments/:awb Get shipment details with
+status history
+GET /api/v1/ndr List NDR shipments
+GET /api/v1/ndr/:awb Get NDR details by AWB
+POST /api/v1/ndr/action/:aw
+b
+Take NDR action (re-attempt /
+return)
+Method Endpoint Description
+===== PAGE 4 =====
+send documented fields.
+Orders API
+Manage your orders — create, update, list, and fetch details for orders placed via the API.
+Create Order
+Creates a new forward order in the Kwikship system.
+Request Body
+1 POST /api/v1/orders
+order_id string Yes Your unique order
+identifier
+order_date string No ISO date string.
+Defaults to current
+time
+channel string No Order source. Defaults
+to "api"
+payment object Yes Payment details
+payment.method string Yes "PREPAID"  or 
+"COD"
+payment.total_am
+ount
+number Yes Total order amount
+(INR)
+payment.collecta
+ble_amount
+number Yes Amount to collect on
+delivery. 0 for prepaid
+payment.shipping
+_charges
+number No Shipping charges
+(INR)
+payment.cod_char
+ges
+number No COD handling charges
+(INR)
+payment.discount number No Total discount amount
+(INR)
+Field Type Required Description
+===== PAGE 5 =====
+payment.gifting_
+charges
+number No Gifting/gift-wrap
+charges (INR)
+customer object Yes Customer
+information
+customer.first_n
+ame
+string Yes Customer first name
+customer.last_na
+me
+string No Customer last name
+customer.email string No Customer email
+address
+customer.phone string Yes Customer phone
+number
+shipping_address object Yes Delivery address
+shipping_address
+.address_line_1
+string Yes Street address line 1
+shipping_address
+.address_line_2
+string No Street address line 2
+shipping_address
+.city
+string Yes City
+shipping_address
+.state
+string Yes State
+shipping_address
+.pincode
+string Yes PIN code
+shipping_address
+.country
+string No Country (default: 
+"India" )
+billing_address object No Billing address
+(defaults to
+shipping_address if
+omitted)
+===== PAGE 6 =====
+(same fields as
+shipping_address)
+pickup_address object Yes Warehouse/pickup
+address
+pickup_address.n
+ame
+string Yes Pickup location name
+pickup_address.p
+hone
+string Yes Pickup contact phone
+pickup_address.a
+ddress_line_1
+string Yes Pickup street address
+line 1
+pickup_address.a
+ddress_line_2
+string No Pickup street address
+line 2
+pickup_address.c
+ity
+string Yes Pickup city
+pickup_address.s
+tate
+string Yes Pickup state
+pickup_address.p
+incode
+string Yes Pickup PIN code
+pickup_address.c
+ountry
+string No Pickup country
+(default: "India" )
+return_address object No Return address
+(defaults to
+pickup_address if
+omitted)
+(same fields as
+pickup_address)
+items array Yes Order line items
+(minimum 1)
+items[].name string Yes Product name
+items[].sku string Yes SKU code
+===== PAGE 7 =====
+Unit conversion: Dimensions are stored internally in mm (x10) and weight in
+grams (x1000). The API handles this conversion automatically — always send
+cm and kg.
+Response (201 Created)
+items[].quantity number Yes Quantity (minimum 1)
+items[].price number Yes Selling price per unit
+(INR)
+items[].discount number No Discount per unit
+(INR)
+items[].hsn_code string No HSN code for tax
+classification
+items[].brand string No Brand name
+dimensions object No Package dimensions
+dimensions.lengt
+h
+number No Length in cm
+dimensions.bread
+th
+number No Breadth in cm
+dimensions.heigh
+t
+number No Height in cm
+dimensions.weigh
+t
+number No Weight in kg
+1 {
+2 "success": true,
+3 "data": {
+4 "order_id": "ORD-123",
+5 "moid": "7f5c4d302b0c418",
+6 "status": "unfulfilled",
+7 "awb": "KWK123456"
+8 },
+9 "message": "Order created successfully"
+10 }
+===== PAGE 8 =====
+The awb  field is included only when an AWB is assigned during order
+creation.
+cURL Example
+List Orders
+Retrieve a paginated list of your orders with optional filtering and sorting.
+Query Parameters
+1 curl -X POST "https://api.gokwik.co/kwikship/api/v1/orders" \
+2 -H "Content-Type: application/json" \
+3 -H "gk-app-id: YOUR_APP_ID" \
+4 -H "gk-app-secret: YOUR_APP_SECRET" \
+5 -d '{
+6 "order_id": "ORD-123",
+7 "payment": {
+8 "method": "PREPAID",
+9 "total_amount": 649,
+10 "collectable_amount": 0
+11 },
+12 "customer": {
+13 "first_name": "John",
+14 "last_name": "Doe",
+15 "phone": "9876543210"
+16 },
+17 "shipping_address": {
+18 "address_line_1": "123 Main Street",
+19 "city": "New Delhi",
+20 "state": "Delhi",
+21 "pincode": "110001"
+22 },
+23 "pickup_address": {
+24 "name": "Main Warehouse",
+25 "phone": "9999999999",
+26 "address_line_1": "456 Warehouse Road",
+27 "city": "Gurgaon",
+28 "state": "Haryana",
+29 "pincode": "122001"
+30 },
+31 "items": [
+32 {
+33 "name": "Blue T-Shirt",
+34 "sku": "TSH-BLU-M",
+35 "quantity": 2,
+36 "price": 299.50,
+37 "hsn_code": "6109"
+38 }
+39 ],
+40 "dimensions": {
+41 "length": 30,
+42 "breadth": 20,
+43 "height": 10,
+44 "weight": 0.5
+45 }
+46 }'
+1 GET /api/v1/orders
+===== PAGE 9 =====
+page integer No 1 Page number
+(min: 1)
+per_page integer No 20 Records per page
+(min: 1, max: 100)
+start_date string No — Start date filter
+(ISO-8601). Must
+be paired with 
+end_date
+end_date string No — End date filter
+(ISO-8601,
+inclusive). Must
+be paired with 
+start_date .
+Max range: 30
+days
+status string No — unfulfilled , 
+fulfilled , or 
+cancelled
+payment_mode string No — PREPAID  or 
+COD
+channel string No — Filter by order
+channel/source
+search string No — Search by
+order_id or AWB
+sort_by string No created_at created_at  or 
+updated_at
+sort_order string No DESC ASC  or DESC
+Parameter Type Required Default Description
+===== PAGE 10 =====
+Date filter rules: Both start_date  and end_date  must be provided
+together — sending only one returns INVALID_DATE_RANGE  (400). The 
+end_date  is inclusive of the full day (i.e., records created up to 23:59:59 on
+that date are included).
+Response (200 OK)
+Get Order Details
+Response (200 OK)
+1 {
+2 "success": true,
+3 "data": [
+4 {
+5 "order_id": "ORD-123",
+6 "moid": "7f5c4d302b0c418",
+7 "status": "unfulfilled",
+8 "payment_mode": "PREPAID",
+9 "total_amount": 649,
+10 "collectable_amount": 0,
+11 "awb": null,
+12 "channel": "api",
+13 "customer_name": "John Doe",
+14 "items_count": 1,
+15 "created_at": "2026-04-20T10:30:00.000Z"
+16 }
+17 ],
+18 "meta": {
+19 "page": 1,
+20 "per_page": 20,
+21 "total": 150,
+22 "total_pages": 8
+23 },
+24 "message": "Orders fetched successfully"
+25 }
+1 GET /api/v1/orders/:order_id
+1 {
+2 "success": true,
+3 "data": {
+4 "order_id": "ORD-123",
+5 "moid": "7f5c4d302b0c418",
+6 "status": "fulfilled",
+7 "fulfilment_status": "fulfilled",
+8 "payment": {
+9 "method": "PREPAID",
+10 "total_amount": 649,
+11 "collectable_amount": 0
+12 },
+13 "customer": {
+14 "name": "John Doe",
+15 "email": "john@example.com",
+16 "phone": "9876543210"
+17 },
+18 "shipping_address": {
+19 "address_line_1": "123 Main Street",
+===== PAGE 11 =====
+Update Order
+Update an order that has not yet been assigned an AWB (pre-shipment only).
+20 "address_line_2": "Floor 4",
+21 "city": "New Delhi",
+22 "state": "Delhi",
+23 "pincode": "110001",
+24 "country": "India"
+25 },
+26 "billing_address": {
+27 "address_line_1": "123 Main Street",
+28 "address_line_2": "Floor 4",
+29 "city": "New Delhi",
+30 "state": "Delhi",
+31 "pincode": "110001",
+32 "country": "India"
+33 },
+34 "pickup_address": {
+35 "address_line_1": "456 Warehouse Road",
+36 "address_line_2": "",
+37 "city": "Gurgaon",
+38 "state": "Haryana",
+39 "pincode": "122001",
+40 "country": "India",
+41 "phone": "9999999999",
+42 "name": "Main Warehouse"
+43 },
+44 "return_address": {
+45 "address_line_1": "456 Warehouse Road",
+46 "address_line_2": "",
+47 "city": "Gurgaon",
+48 "state": "Haryana",
+49 "pincode": "122001",
+50 "country": "India",
+51 "phone": "9999999999",
+52 "name": "Main Warehouse"
+53 },
+54 "items": [
+55 {
+56 "name": "Blue T-Shirt",
+57 "sku": "TSH-BLU-M",
+58 "quantity": 2,
+59 "price": 299.50,
+60 "discount": 0,
+61 "hsn_code": "6109",
+62 "brand": "TestBrand"
+63 }
+64 ],
+65 "dimensions": {
+66 "length": 30,
+67 "breadth": 20,
+68 "height": 10,
+69 "weight": 0.5
+70 },
+71 "awb": "KWK123456",
+72 "channel": "api",
+73 "tags": [],
+74 "created_at": "2026-04-20T10:30:00.000Z",
+75 "updated_at": "2026-04-21T14:00:00.000Z",
+76 "fulfilled_at": "2026-04-21T12:00:00.000Z"
+77 },
+78 "message": "Order details fetched successfully"
+79 }
+===== PAGE 12 =====
+Orders with an assigned AWB cannot be modified. The API returns 
+ORDER_NOT_EDITABLE  (400) if the order already has a waybill.
+Request Body
+All fields are optional — only send what you want to update.
+1 PATCH /api/v1/orders/:order_id
+customer.first_n
+ame
+string No Customer first name
+customer.last_na
+me
+string No Customer last name
+customer.email string No Customer email
+customer.phone string No Customer phone
+shipping_address object No Delivery address
+(same fields as create)
+billing_address object No Billing address (same
+fields as create)
+items array No Replacement item list
+(min 1 item)
+dimensions object No Package dimensions
+(length/breadth in cm,
+weight in kg)
+payment.method string No "PREPAID"  or 
+"COD"
+payment.total_am
+ount
+number No Updated total amount
+payment.collecta
+ble_amount
+number No Updated collectable
+amount
+Field Type Required Description
+===== PAGE 13 =====
+Items are replaced entirely — send the complete items array, not a partial
+update.
+Response (200 OK)
+Tracking API
+Bulk Shipment Tracking
+Retrieve bulk shipment tracking data for a date range.
+Query Parameters
+Date range must be between 0 and 30 days.
+Response (200 OK)
+1 {
+2 "success": true,
+3 "data": {
+4 "order_id": "ORD-123",
+5 "status": "unfulfilled"
+6 },
+7 "message": "Order updated successfully"
+8 }
+1 GET /api/v1/tracking/shipments/bulk
+start_date string Yes — Start date (ISO-
+8601)
+end_date string Yes — End date (ISO-
+8601)
+page integer No 1 Page number
+(min: 1)
+limit integer No 20 Records per page
+(min: 1, max: 100)
+Parameter Type Required Default Description
+1 {
+2 "success": true,
+3 "data": [
+4 {
+5 "awb": "505493DO5302034",
+6 "channel_order_id": "#RM488174",
+===== PAGE 14 =====
+Shipments API
+Query detailed shipment data with advanced filtering.
+Shipment Status Groups
+The status  filter uses logical groups — each group matches multiple internal shipment
+statuses. This lets you filter broadly without knowing every underlying status.
+7 "current_order_shipment_status": "Delivered",
+8 "shipment_created_at": "2026-04-15T10:30:00.000Z",
+9 "shipment_updated_at": "2026-04-20T15:45:30.000Z",
+10 "payment_method": "COD",
+11 "pickup_pincode": "110001",
+12 "destination_pincode": "400001",
+13 "courier_name": "DelhiveryDirect",
+14 "products": [
+15 {
+16 "variant_id": null,
+17 "sku": "SKU123456",
+18 "product_id": null,
+19 "product_name": "Premium Wireless Headphones",
+20 "product_status": null,
+21 "selling_price": 2999.00,
+22 "discount": null,
+23 "quantity": 1
+24 }
+25 ],
+26 "order_total": 2999.00
+27 }
+28 ],
+29 "meta": {
+30 "page": 1,
+31 "per_page": 20,
+32 "total": 150,
+33 "total_pages": 8
+34 },
+35 "message": "Tracking shipments fetched successfully"
+36 }
+new Newly created, not yet in
+pickup flow
+new , 
+cancellation_requested ,
+return_pickup_initiate
+d , return_cancelled , 
+return_cancellation_req
+uested
+pickup_pending Awaiting pickup by courier to_be_picked , 
+picklist_generated , 
+label_generated , 
+packing_exempted , 
+Status Group Description Matches Internal Statuses
+===== PAGE 15 =====
+packing_on_hold , 
+pickup_ready , 
+ready_for_pickup , 
+manifestated , 
+out_for_pickup , 
+pickup_error , 
+pickup_exemption , 
+pickup_rescheduled , 
+ready_to_ship , 
+pickup_scheduled , and
+return pickup equivalents
+in_transit Picked up and moving toward
+destination
+pickup_completed , 
+in_transit , 
+out_for_delivery , 
+reached_destination_hu
+b , reached_source_hub , 
+delayed , lost , damaged ,
+destroyed , 
+delivery_on_hold , 
+ndr_attempt_1/2/3 , and
+return transit equivalents
+delivered Successfully delivered delivered , 
+return_delivered
+undelivered Delivery attempted but failed
+(NDR)
+undelivered
+rto Return to origin (all RTO sub-
+statuses)
+rto_initiated , 
+rto_in_transit , 
+rto_delivered , 
+rto_cancelled , rto_ndr ,
+rto_delivery_error , 
+rto_out_of_delivery
+cancelled Shipment cancelled cancelled , 
+cancellation_initiated
+===== PAGE 16 =====
+List Shipments
+Query Parameters
+1 GET /api/v1/shipments
+page integer No 1 Page number
+(min: 1)
+per_page integer No 15 Records per page
+(min: 1, max: 100)
+from string No — Start date (ISO-
+8601). Must be
+paired with to
+to string No — End date (ISO-
+8601). Must be
+paired with 
+from . Max
+range: 30 days
+status string No — Status group
+filter: new , 
+pickup_pendin
+g , 
+in_transit , 
+delivered , 
+undelivered , 
+rto , 
+cancelled
+(see Status
+Groups table
+above)
+payment_mode string No — PREPAID  or 
+COD  (case-
+insensitive)
+courier_name string No — Filter by
+courier/shipper
+Parameter Type Required Default Description
+===== PAGE 17 =====
+Date filter rules: Both from  and to  must be provided together — sending
+only one returns INVALID_DATE_RANGE  (400).
+Response (200 OK)
+name (partial
+match)
+awb string No — Filter by AWB
+number
+order_id string No — Filter by order ID
+search string No — Search by AWB
+or order ID
+(partial match)
+sort_by string No creation_date
+time
+creation_date
+time  or 
+total_amount
+sort_order string No DESC ASC  or DESC
+1 {
+2 "success": true,
+3 "data": [
+4 {
+5 "awb": "KWK123456",
+6 "order_id": "ORD-123",
+7 "status": "delivered",
+8 "payment_mode": "PREPAID",
+9 "courier_name": "DelhiveryDirect",
+10 "total_amount": 649,
+11 "weight": 0.5,
+12 "customer_name": "John Doe",
+13 "customer_phone": "9876543210",
+14 "creation_datetime": "2026-04-15T10:30:00.000Z",
+15 "estimated_delivery_date": "2026-04-20T00:00:00.000Z"
+16 }
+17 ],
+18 "meta": {
+19 "page": 1,
+20 "per_page": 15,
+21 "total": 150,
+22 "total_pages": 10
+23 },
+24 "message": "Shipments fetched successfully"
+25 }
+===== PAGE 18 =====
+Get Shipment Details
+Retrieve detailed information for a specific shipment including full address details, dimensions,
+and status history.
+Path Parameters
+Response (200 OK)
+1 GET /api/v1/shipments/:awb
+awb string Yes Air waybill number
+Parameter Type Required Description
+1 {
+2 "success": true,
+3 "data": {
+4 "awb": "KWK123456",
+5 "order_id": "ORD-123",
+6 "status": "delivered",
+7 "payment_mode": "PREPAID",
+8 "courier_name": "DelhiveryDirect",
+9 "total_amount": 649,
+10 "weight": 0.5,
+11 "customer_name": "John Doe",
+12 "customer_phone": "9876543210",
+13 "creation_datetime": "2026-04-15T10:30:00.000Z",
+14 "estimated_delivery_date": "2026-04-20T00:00:00.000Z",
+15 "shipping_address": {
+16 "address1": "123 Main Street",
+17 "address2": "Floor 4",
+18 "city": "New Delhi",
+19 "state": "Delhi",
+20 "pincode": "110001",
+21 "country": "India"
+22 },
+23 "pickup_address": {
+24 "address1": "456 Warehouse Road",
+25 "city": "Gurgaon",
+26 "state": "Haryana",
+27 "pincode": "122001"
+28 },
+29 "dimensions": {
+30 "length": 3.0,
+31 "breadth": 2.0,
+32 "height": 1.0,
+33 "weight": 0.5
+34 },
+35 "status_history": [
+36 {
+37 "status": "delivered",
+38 "description": "Shipment delivered successfully",
+39 "location": "New Delhi",
+40 "datetime": "2026-04-20T15:45:30.000Z"
+41 },
+42 {
+43 "status": "out_for_delivery",
+44 "description": "Shipment out for delivery",
+45 "location": "New Delhi",
+46 "datetime": "2026-04-20T08:00:00.000Z"
+===== PAGE 19 =====
+Note: The status  field in the response and in status_history  entries
+reflects the actual internal status (e.g., out_for_delivery , 
+rto_in_transit ), not the group name. The group names (in_transit , 
+rto , etc.) are only used as filter values in query parameters.
+NDR (Non-Delivery Report) API
+Manage failed delivery attempts — view NDR shipments and take action to re-attempt delivery
+or initiate returns.
+List NDR Shipments
+Query Parameters
+47 },
+48 {
+49 "status": "in_transit",
+50 "description": "Shipment in transit",
+51 "location": "Gurgaon Hub",
+52 "datetime": "2026-04-17T14:30:00.000Z"
+53 }
+54 ]
+55 },
+56 "message": "Shipment details fetched successfully"
+57 }
+1 GET /api/v1/ndr
+page integer No 1 Page number
+(min: 1)
+per_page integer No 15 Records per page
+(min: 1, max: 100)
+from string No — Start date (ISO-
+8601). Must be
+paired with to
+to string No — End date (ISO-
+8601). Must be
+paired with 
+from . Max
+range: 30 days
+Parameter Type Required Default Description
+===== PAGE 20 =====
+Date filter rules: Both from  and to  must be provided together — sending
+only one returns INVALID_DATE_RANGE  (400).
+Response (200 OK)
+awb string No — Filter by AWB
+number
+order_id string No — Filter by order ID
+ndr_status string No — Filter by NDR
+status: 
+PENDING , 
+QUEUED , 
+PROCESSING , 
+ACTIONED , 
+ACTION_FAILE
+D
+courier_name string No — Filter by courier
+name (partial
+match)
+search string No — Search by AWB
+or order ID
+(partial match)
+1 {
+2 "success": true,
+3 "data": [
+4 {
+5 "awb": "KWK123456",
+6 "order_id": "ORD-123",
+7 "courier_name": "DelhiveryDirect",
+8 "ndr_status": "PENDING",
+9 "ndr_attempt": 1,
+10 "reason": "Customer not available",
+11 "customer_name": "John Doe",
+12 "customer_phone": "9876543210",
+13 "creation_datetime": "2026-04-15T10:30:00.000Z",
+14 "last_status_update": "2026-04-20T15:45:30.000Z"
+15 }
+16 ],
+17 "meta": {
+18 "page": 1,
+19 "per_page": 15,
+20 "total": 25,
+21 "total_pages": 2
+===== PAGE 21 =====
+Get NDR Details by AWB
+Returns the same fields as the NDR list response for a single shipment, plus a history  array
+of all NDR actions taken.
+Response (200 OK)
+Take NDR Action
+Request a re-delivery attempt or initiate a return for an undelivered shipment.
+The shipment must be in undelivered  status. Returns 
+SHIPMENT_NOT_NDR  (400) otherwise.
+22 },
+23 "message": "NDR shipments fetched successfully"
+24 }
+1 GET /api/v1/ndr/:awb
+1 {
+2 "success": true,
+3 "data": {
+4 "awb": "KWK123456",
+5 "order_id": "ORD-123",
+6 "courier_name": "DelhiveryDirect",
+7 "ndr_status": "ACTIONED",
+8 "ndr_attempt": 2,
+9 "reason": "Customer not available",
+10 "customer_name": "John Doe",
+11 "customer_phone": "9876543210",
+12 "creation_datetime": "2026-04-15T10:30:00.000Z",
+13 "last_status_update": "2026-04-21T10:00:00.000Z",
+14 "history": [
+15 {
+16 "action": "re-attempt",
+17 "action_by": "merchant",
+18 "reason": "ACTIONED",
+19 "comment": "Customer confirmed availability for tomorrow",
+20 "ndr_attempt": 2,
+21 "created_at": "2026-04-21T10:00:00.000Z"
+22 },
+23 {
+24 "action": "re-attempt",
+25 "action_by": "merchant",
+26 "reason": "ACTION_FAILED",
+27 "comment": "Please try again, customer is home now",
+28 "ndr_attempt": 1,
+29 "created_at": "2026-04-20T16:00:00.000Z"
+30 }
+31 ]
+32 },
+33 "message": "NDR shipment details fetched successfully"
+34 }
+1 POST /api/v1/ndr/action/:awb
+===== PAGE 22 =====
+Request Body
+Response (200 OK)
+Best Practices
+Pagination
+All list endpoints use per_page  for page size control.
+Default page sizes: Orders = 20, Shipments = 15, NDR = 15, Tracking = 20.
+Maximum page size is 100 for all endpoints.
+Always check meta.total_pages  to know if more data exists.
+action string Yes "re-attempt"  or 
+"return"
+comments string Yes Reason/instructions
+for the action
+phone string No Updated customer
+phone number
+remarks string No Additional remarks
+address1 string No Updated delivery
+address line 1 (for re-
+attempt)
+address2 string No Updated delivery
+address line 2 (for re-
+attempt)
+deferred_date string No Schedule re-delivery
+for a specific date
+(YYYY-MM-DD)
+Field Type Required Description
+1 {
+2 "success": true,
+3 "data": {
+4 "status": "SUCCESS",
+5 "message": "Action queued successfully"
+6 },
+7 "message": "NDR action created successfully"
+8 }
+===== PAGE 23 =====
+Date Ranges
+All date range filters have a maximum span of 30 days.
+Both dates must be provided together — sending only one date returns an error.
+Use ISO-8601 format: 2026-04-01  or 2026-04-01T00:00:00.000Z .
+End dates are inclusive — end_date=2026-04-20  includes all records through the end of
+April 20th.
+For Tracking bulk endpoint, both start_date  and end_date  are required.
+Strict Validation
+All endpoints enforce strict field validation — unknown or extra fields in request bodies and
+query parameters are rejected with a VALIDATION_ERROR  (400).
+Only send documented fields to avoid validation errors.
+Error Handling
+Always check the success  field in the response.
+Use error.code  for programmatic error handling, error.message  for display.
+Implement retry logic with exponential backoff for 500  errors.
+Order Creation
+Validate that collectable_amount  is 0  for PREPAID orders.
+The billing_address  defaults to shipping_address  and return_address  defaults
+to pickup_address  if not provided.
+Dimensions are in cm and weight in kg. The API converts internally to mm and grams.
+Each order must have at least one item with quantity >= 1.
+NDR Actions
+Only undelivered  shipments can have NDR actions.
+Always provide comments  when taking an action — it helps courier partners.
+Use deferred_date  to schedule re-delivery for a future date.
+Support
+For integration support, API credential requests, or technical assistance:
+Email: 
+Dashboard: Log in to your Kwikship Dashboard for real-time order and shipment
+management.
+support@kwikship.com
+===== PAGE 24 =====
+Kwikship Public API v1 — Last updated: May 2026

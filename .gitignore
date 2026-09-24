@@ -1,0 +1,25 @@
+# dependencies and build output
+node_modules/
+dist/
+dist-ssr/
+
+# secrets - only the *.example templates are committed
+.env
+.env.*
+!.env.example
+
+# logs and OS/editor files
+*.log
+.DS_Store
+Thumbs.db
+~$*
+.claude/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# real business data - never commit (real AWBs, freight and shipment data)
+test-data/Real_Data_Case_Analysis.xlsx
+test-data/Manual_Proof_Workbook.xlsx
+reconcile_body.json
+*.csv

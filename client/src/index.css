@@ -1,0 +1,143 @@
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+
+/* Class-based dark mode: the in-app toggle adds `dark` to <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Sunset Cocoa brand scale (orange), used via Tailwind as brand-* */
+@theme {
+  --color-brand-50: #fff1e8;
+  --color-brand-100: #ffdcc4;
+  --color-brand-200: #f7b48f;
+  --color-brand-300: #ff9a66;
+  --color-brand-400: #ff8a50;
+  --color-brand-500: #f0620f;
+  --color-brand-600: #e4531a;
+  --color-brand-700: #c4400f;
+  --color-brand-800: #9a2e0c;
+  --color-brand-900: #6f2008;
+  --color-brand-950: #3a1206;
+}
+
+:root {
+  --bg: #fff7ef;
+  --card: #ffffff;
+  --text: #2b1810;
+  --muted: #8a6f5f;
+  --line: #f0dfd0;
+  --hov: rgba(60, 30, 10, 0.04);
+  --grad: linear-gradient(135deg, #f0620f, #c9302c);
+  --accent: #e4531a;
+  --c1: linear-gradient(135deg, #e2560f, #a3200f);
+  --c2: linear-gradient(135deg, #0e8a78, #0b3d6b);
+  --c3: linear-gradient(135deg, #c76a06, #7a3306);
+  --c4: linear-gradient(135deg, #6a1fd0, #b0175f);
+  --side: linear-gradient(180deg, #3a1d0c, #1f0d05);
+  --g-bg: #dff7ea; --g-t: #0d7a45;
+  --r-bg: #ffe1e1; --r-t: #b42323;
+  --y-bg: #fff1cc; --y-t: #946200;
+  --p-bg: #efe2ff; --p-t: #6a2fb8;
+  --b-bg: #dcecff; --b-t: #1c5fb8;
+}
+.dark {
+  --bg: #170d07;
+  --card: #271811;
+  --text: #fbeee2;
+  --muted: #c2a58f;
+  --line: #3f2a1c;
+  --hov: rgba(255, 255, 255, 0.04);
+  --side: linear-gradient(180deg, #22110a, #120804);
+  --g-bg: rgba(67, 206, 162, 0.16); --g-t: #5ce0b3;
+  --r-bg: rgba(255, 94, 98, 0.16); --r-t: #ff8f92;
+  --y-bg: rgba(255, 200, 60, 0.16); --y-t: #ffd166;
+  --p-bg: rgba(190, 120, 255, 0.18); --p-t: #d4a6ff;
+  --b-bg: rgba(90, 160, 255, 0.16); --b-t: #8fc0ff;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ---------- reusable page pieces ---------- */
+.page-title { font-size: 1.6rem; font-weight: 800; color: var(--text); }
+.page-sub { margin-top: 0.2rem; font-size: 0.85rem; line-height: 1.5; color: var(--muted); }
+.section-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-top: 0.5rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.35);
+}
+.hint {
+  background: var(--y-bg); color: var(--y-t);
+  border-radius: 12px; padding: 0.7rem 0.9rem; font-size: 0.8rem; line-height: 1.5;
+}
+.tiles { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.tile {
+  position: relative; overflow: hidden; color: #fff;
+  border-radius: 18px; padding: 1.1rem 1.2rem;
+  box-shadow: 0 14px 28px -14px rgba(0, 0, 0, 0.5);
+}
+.tile::after {
+  content: ''; position: absolute; right: -30px; top: -30px;
+  width: 110px; height: 110px; border-radius: 50%; background: rgba(255, 255, 255, 0.1);
+}
+.tile-label { font-size: 0.78rem; opacity: 0.92; }
+.tile-value { font-size: 1.6rem; font-weight: 800; margin: 0.3rem 0 0.1rem; line-height: 1.15; }
+.tile-note { font-size: 0.72rem; opacity: 0.88; }
+.tile-1 { background: var(--c1); } .tile-2 { background: var(--c2); }
+.tile-3 { background: var(--c3); } .tile-4 { background: var(--c4); }
+
+.tag { display: inline-block; padding: 0.22rem 0.65rem; border-radius: 99px; font-size: 0.72rem; font-weight: 600; }
+.tag-g { background: var(--g-bg); color: var(--g-t); }
+.tag-r { background: var(--r-bg); color: var(--r-t); }
+.tag-y { background: var(--y-bg); color: var(--y-t); }
+.tag-p { background: var(--p-bg); color: var(--p-t); }
+.tag-b { background: var(--b-bg); color: var(--b-t); }
+
+.bar-track { height: 14px; border-radius: 99px; background: var(--hov); border: 1px solid var(--line); overflow: hidden; flex: 1; }
+.bar-fill { height: 100%; border-radius: 99px; background: var(--grad); }
+
+.chip {
+  padding: 0.4rem 0.85rem; border-radius: 99px; font-size: 0.78rem; cursor: pointer;
+  border: 1px solid var(--line); background: var(--card); color: var(--text);
+}
+.chip.on { background: var(--grad); color: #fff; border-color: transparent; }
+
+/* ---------- PrimeReact overrides ---------- */
+.p-button { border-radius: 12px; font-weight: 600; }
+.p-button:not(.p-button-secondary):not(.p-button-outlined):not(.p-button-text):not(.p-button-danger):not(.p-button-success):not(.p-disabled) {
+  background: var(--grad); border: 0; color: #fff; box-shadow: 0 8px 20px -8px var(--accent);
+}
+.p-button:not(.p-button-secondary):not(.p-button-outlined):not(.p-button-text):not(.p-button-danger):not(.p-button-success):not(.p-disabled):hover {
+  filter: brightness(1.08);
+}
+.p-fileupload-basic .p-button.p-fileupload-choose { background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+.p-datatable .p-datatable-thead > tr > th {
+  text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.06em; white-space: nowrap;
+}
+.p-datatable .p-datatable-tbody > tr > td { white-space: nowrap; padding: 0.7rem 1rem; }
+.p-datatable .p-datatable-thead > tr > th { padding: 0.8rem 1rem; }
+.p-tag { border-radius: 99px; font-weight: 600; padding: 0.2rem 0.65rem; }
+.p-dialog { border-radius: 20px; overflow: hidden; }
+.p-inputtext, .p-dropdown { border-radius: 12px; }
+.p-password.w-full .p-icon-field { width: 100%; }
+.p-password.w-full .p-password-input { width: 100%; }
+
+/* bordered icon button (delete etc.), as in the mockups */
+.ic-btn {
+  width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line);
+  display: inline-grid; place-items: center; background: var(--card); color: #e0523f; cursor: pointer;
+}
+.ic-btn:hover { background: var(--r-bg); }
+.bar-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.45rem 0.6rem; border-radius: 12px; cursor: pointer; border: 1px solid transparent; }
+.bar-row:hover { background: var(--hov); }
+.bar-row.on { border-color: var(--accent); background: var(--hov); }
+.p-inputswitch.p-highlight .p-inputswitch-slider { background: var(--grad); }
+
+/* Tables use PrimeReact's own responsiveLayout="stack"; it injects its own scoped media query. */

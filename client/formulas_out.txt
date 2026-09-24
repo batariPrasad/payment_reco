@@ -1,0 +1,39 @@
+﻿0 '153787860550393'
+1 'Pokonut'
+2 'xpressbees'
+3 'SURFACE'
+4 0.5
+5 'C'
+6 'Delivered'
+7 'PREPAID'
+8 ' -   '
+9 29
+10 '  '
+11 '  '
+12 '  '
+13 29
+14 34.22
+15 '190f266oofoe'
+16 '#2026734199'
+17 299
+18 1001049
+19 2
+20 ' Dark Patch Reducer Cream, 1|| Detan cofee Soap, 1 '
+21 '1st floor 67 akshaya gardens mahaveer road, 1st c cross near growing miracle school akshayanagar, 560076'
+22 600083
+23 'C'
+24 200
+25 0.5
+26 29
+27 None
+28 None
+29 None
+30 None
+31 '=SUM(AA2:AE2)'
+32 '=AF2*18%'
+33 '=AF2+AG2'
+34 None
+35 None
+36 None
+37 None
+38 None

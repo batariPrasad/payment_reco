@@ -1,0 +1,28 @@
+﻿AWB 47073310800531
+  Mode: AIR | MIS Weight: 0.5 | MIS Zone: D | Status: Delivered | Payment: COD
+  MIS Forward/RTO/COD/Gross/Total: 50    28 78 92.04
+  drop_pincode: 416208 | ZONE(manual): D | WEIGHT(manual): 200 | WEIGHT_SLAB: 0.5
+  FARWARD: 50 | BACKWARD: None | COD: 28
+  TOTAL_FRIGHT: 78 | GST: 14.04 | TOTAL+GST: 92.03999999999999
+
+AWB 47073310800542
+  Mode: AIR | MIS Weight: 0.5 | MIS Zone: D | Status: RTO | Payment: COD
+  MIS Forward/RTO/COD/Gross/Total: 50 50    100 118
+  drop_pincode: 412207 | ZONE(manual): D | WEIGHT(manual): 200 | WEIGHT_SLAB: 0.5
+  FARWARD: 50 | BACKWARD: 50 | COD: None
+  TOTAL_FRIGHT: 100 | GST: 18 | TOTAL+GST: 118
+
+AWB 47073310802082
+  Mode: AIR | MIS Weight: 0.5 | MIS Zone: D | Status: Delivered | Payment: COD
+  MIS Forward/RTO/COD/Gross/Total: 50    28 78 92.04
+  drop_pincode: 416510 | ZONE(manual): D | WEIGHT(manual): 1 | WEIGHT_SLAB: 0.5
+  FARWARD: 50 | BACKWARD: None | COD: 28
+  TOTAL_FRIGHT: 78 | GST: 14.04 | TOTAL+GST: 92.03999999999999
+
+AWB 49582213949536
+  Mode: SURFACE | MIS Weight: 0.5 | MIS Zone: D | Status: Delivered | Payment: COD
+  MIS Forward/RTO/COD/Gross/Total: 33    15 48 56.64
+  drop_pincode: 641604 | ZONE(manual): D | WEIGHT(manual): 1 | WEIGHT_SLAB: 0.5
+  FARWARD: 33 | BACKWARD: None | COD: 15
+  TOTAL_FRIGHT: 48 | GST: 8.64 | TOTAL+GST: 56.64
+
