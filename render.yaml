@@ -7,8 +7,10 @@ databases:
     databaseName: payment_reco
     user: payment_reco_app
     region: singapore
-    # The free Postgres plan is deleted after 30 days - use a paid plan for real data.
-    plan: basic-256mb
+    # FREE plan: Render expires it 30 days after creation (14-day grace to upgrade, then it is deleted),
+    # 1 GB storage, one free database per workspace. Back up with pg_dump before it expires, or switch
+    # to a paid plan (e.g. basic-256mb) here to keep the data.
+    plan: free
     postgresMajorVersion: "16"
     # Only services inside Render can connect. To restore a dump from your own PC,
     # temporarily add your public IP here (or in the dashboard) and use the External URL.
