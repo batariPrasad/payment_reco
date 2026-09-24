@@ -17,7 +17,11 @@ if (!jwtSecret) {
 }
 
 export const env = {
+  isProduction: process.env.NODE_ENV === 'production',
   databaseUrl: required('DATABASE_URL'),
+  // Render's *internal* database URL needs no SSL; its external URL (and most hosted
+  // Postgres from outside the provider's network) does. Set DATABASE_SSL=true for those.
+  databaseSsl: process.env.DATABASE_SSL === 'true',
   kwikshipBaseUrl: process.env.KWIKSHIP_BASE_URL || 'https://api.gokwik.co/kwikship',
   kwikshipAppId: process.env.KWIKSHIP_APP_ID || '',
   kwikshipAppSecret: process.env.KWIKSHIP_APP_SECRET || '',

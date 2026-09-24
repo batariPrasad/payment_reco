@@ -18,18 +18,22 @@ export function signSessionToken(payload: SessionPayload): string {
   return jwt.sign(payload, env.jwtSecret, { expiresIn: `${env.sessionHours}h` });
 }
 
+// In production the client and API live on different hosts (e.g. two onrender.com subdomains,
+// which browsers treat as cross-site), so the cookie must be SameSite=None and therefore Secure.
+// Locally (http, same site) Lax without Secure keeps working.
+const cookieAttrs = {
+  httpOnly: true,
+  sameSite: (env.isProduction ? 'none' : 'lax') as 'none' | 'lax',
+  secure: env.isProduction,
+  path: '/',
+};
+
 export function setSessionCookie(res: Response, token: string) {
-  res.cookie(AUTH_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: false, // set true once this runs behind HTTPS
-    maxAge: env.sessionHours * 60 * 60 * 1000,
-    path: '/',
-  });
+  res.cookie(AUTH_COOKIE_NAME, token, { ...cookieAttrs, maxAge: env.sessionHours * 60 * 60 * 1000 });
 }
 
 export function clearSessionCookie(res: Response) {
-  res.clearCookie(AUTH_COOKIE_NAME, { path: '/' });
+  res.clearCookie(AUTH_COOKIE_NAME, cookieAttrs);
 }
 
 /** Verifies the session cookie and attaches the user to the request. 401s if missing/invalid. */

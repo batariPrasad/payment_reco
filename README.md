@@ -88,6 +88,18 @@ npm run dev
 
 Opens on http://localhost:5173.
 
+## Deploying the backend and database to Render
+
+`render.yaml` defines a Postgres database and the API (`server/`). In Render: **New > Blueprint**, pick this
+repo and the branch, then fill in the prompted values (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `KWIKSHIP_APP_ID`,
+`KWIKSHIP_APP_SECRET`, `CLIENT_ORIGIN`). On every start the API runs the migrations (idempotent) and creates
+the first admin if the users table is empty. Health check: `/api/health`.
+
+- `NODE_ENV=production` makes the session cookie `Secure; SameSite=None` so a client on another host can log in.
+  The client must therefore be served over HTTPS and its URL listed in `CLIENT_ORIGIN`.
+- When the client is built, point it at the API: `VITE_API_BASE_URL=https://<your-api>.onrender.com/api`.
+- The new database starts empty: re-upload the zone maps, rate card and shipment data from the app.
+
 ## Using the app
 
 1. **Zone Reference** — upload your full pincode→zone file for each hub (Bangalore 560076,
